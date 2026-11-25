@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>감성일기장 — Mood & Vibe Diary</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Gowun Batang (감성 명조) & Pretendard/Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Inter:wght@300;400;500;600&family=Noto+Serif+KR:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* 기본 폰트 및 스타일 변수 (Apple Journal 영감 팔레트 적용) */
+    :root {
+      --bg-gradient: #f6f5f8;
+      --card-bg: #ffffff;
+      --card-border: rgba(0, 0, 0, 0.05);
+      --text-primary: #1c1c1e;
+      --text-secondary: #6e6e73;
+      --accent-color: #5856d6;
+      --accent-soft: rgba(88, 86, 214, 0.12);
+      --hero-bg: linear-gradient(145deg, #3b2654 0%, #241736 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: #e9e8ee;
+      background-image: radial-gradient(circle at 20% 20%, #f4f3f8 0%, #dfdde6 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* 감성 세리프 폰트 클래스 */
+    .font-serif-mood {
+      font-family: 'Gowun Batang', 'Noto Serif KR', serif;
+    }
+
+    /* 데스크톱에서는 모바일 프레임, 모바일에서는 풀스크린 */
+    .app-shell {
+      width: 100%;
+      max-width: 430px;
+      height: 100vh;
+      max-height: 890px;
+      background: var(--bg-gradient);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 0.6s cubic-bezier(0.22, 1, 0.36, 1), color 0.4s ease;
+      box-shadow: 0 25px 60px -15px rgba(36, 23, 54, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    }
+
+    @media (min-width: 480px) {
+      .app-shell {
+        height: 92vh;
+        border-radius: 38px;
+        border: 8px solid #1f1e24;
+      }
+    }
+
+    /* 클린 카드 & 글래스 패널 (Apple Journal 스타일) */
+    .glass-panel {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 6px 24px rgba(28, 28, 30, 0.045);
+      transition: all 0.35s ease;
+    }
+
+    .glass-btn {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 14px rgba(28, 28, 30, 0.04);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .glass-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* 인디고 퍼플 프라이머리 버튼 */
+    .btn-indigo-primary {
+      background: var(--accent-color);
+      color: #ffffff;
+      box-shadow: 0 8px 20px -4px rgba(88, 86, 214, 0.45);
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .btn-indigo-primary:hover {
+      filter: brightness(1.06);
+    }
+    .btn-indigo-primary:active {
+      transform: scale(0.97);
+    }
+
+    /* 홈 히어로 카드 (첨부 이미지 좌측 상단 딥 퍼플 무드 반영) */
+    .hero-purple-card {
+      background: var(--hero-bg);
+      color: #ffffff;
+      box-shadow: 0 16px 34px -10px rgba(42, 26, 64, 0.42);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    /* 스크롤바 숨김 처리 (깔끔한 모바일 뷰) */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 화면 전환 애니메이션 */
+    .view-section {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 92px;
+      animation: fadeSlideUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .view-section.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 은은한 달빛/무드 부유 애니메이션 */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-6px) scale(1.03); }
+    }
+
+    .animate-float {
+      animation: floatSlow 5s ease-in-out infinite;
+    }
+
+    /* 빗소리 사운드 웨이브 애니메이션 */
+    .sound-bar {
+      width: 2.5px;
+      height: 10px;
+      background-color: currentColor;
+      border-radius: 2px;
+      transition: height 0.2s ease;
+    }
+    .sound-playing .sound-bar:nth-child(1) { animation: soundWave 0.9s infinite ease-in-out; }
+    .sound-playing .sound-bar:nth-child(2) { animation: soundWave 0.6s infinite ease-in-out 0.2s; }
+    .sound-playing .sound-bar:nth-child(3) { animation: soundWave 0.8s infinite ease-in-out 0.4s; }
+
+    @keyframes soundWave {
+      0%, 100% { height: 4px; }
+      50% { height: 14px; }
+    }
+
+    /* 캘린더 그리드 */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    /* 커스텀 오디오 볼륨 슬라이더 */
+    input[type="range"].mood-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(88, 86, 214, 0.2);
+      outline: none;
+    }
+    input[type="range"].mood-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #5856d6;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(88, 86, 214, 0.4);
+    }
+
+    /* 다크 테마(딥 퍼플 나이트) 일 때 텍스트 가독성 보정 */
+    .theme-dark {
+      --text-primary: #f5f4f8;
+      --text-secondary: #b8b3c7;
+      --card-bg: rgba(45, 34, 64, 0.72);
+      --card-border: rgba(255, 255, 255, 0.12);
+    }
+    .theme-dark .glass-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: #f5f4f8;
+    }
+    .theme-dark .bottom-nav {
+      background: rgba(28, 20, 42, 0.88);
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+    .theme-dark .input-surface {
+      background: rgba(36, 27, 52, 0.75);
+      color: #f5f4f8;
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 메인 앱 컨테이너 -->
+  <div id="appShell" class="app-shell">
+    
+    <!-- 상단 헤더 -->
+    <header class="px-6 pt-6 pb-3 flex items-center justify-between z-20 shrink-0">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="switchTab('home')">
+        <span class="text-2xl font-bold tracking-tight">Journal</span>
+        <span class="font-serif-mood text-xs opacity-60 font-medium mt-1">감성일기장</span>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <!-- 감성 배경음악 플레이어 버튼 -->
+        <button id="soundToggleBtn" onclick="toggleAudioDrawer()" title="감성 BGM & 앰비언트 플레이어"
+          class="h-9 px-3.5 rounded-full glass-panel flex items-center gap-2 text-xs font-medium hover:opacity-90 transition">
+          <div id="soundVisualizer" class="flex items-center gap-[2px] h-3.5 text-[#5856d6]">
+            <span class="sound-bar"></span>
+            <span class="sound-bar"></span>
+            <span class="sound-bar"></span>
+          </div>
+          <span id="soundLabel" class="max-w-[84px] truncate">BGM 플레이어</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 미니 배경음악(BGM) 플레이어 드로어 -->
+    <div id="audioPlayerDrawer" class="hidden mx-6 mb-2 p-4 rounded-2xl glass-panel z-20 shrink-0 border border-[#5856d6]/20 shadow-lg">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-[#5856d6]/12 text-[#5856d6] flex items-center justify-center">
+            <i data-lucide="music" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div id="currentTrackTitle" class="text-xs font-bold">새벽의 오르골 피아노</div>
+            <div id="currentTrackSub" class="text-[10px] opacity-60">잔잔한 코드 진행 · 집중 & 회고</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="prevTrack()" class="p-1.5 rounded-full hover:bg-black/[0.06] transition" title="이전 트랙">
+            <i data-lucide="skip-back" class="w-3.5 h-3.5"></i>
+          </button>
+          <button id="playPauseMainBtn" onclick="togglePlayPause()" class="w-8 h-8 rounded-full btn-indigo-primary flex items-center justify-center" title="재생/일시정지">
+            <i id="playPauseIcon" data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          </button>
+          <button onclick="nextTrack()" class="p-1.5 rounded-full hover:bg-black/[0.06] transition" title="다음 트랙">
+            <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="toggleAudioDrawer()" class="p-1.5 rounded-full hover:bg-black/[0.06] opacity-60 ml-1" title="닫기">
+            <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 트랙 선택 칩 -->
+      <div id="trackListChips" class="grid grid-cols-3 gap-1.5 mb-3">
+        <!-- JS로 렌더링 -->
+      </div>
+
+      <!-- 볼륨 조절 바 -->
+      <div class="flex items-center gap-2.5 pt-2 border-t border-black/[0.06]">
+        <i data-lucide="volume-2" class="w-3.5 h-3.5 text-[#5856d6] shrink-0"></i>
+        <input type="range" id="bgmVolumeSlider" min="0" max="100" value="55" oninput="updateBgmVolume(this.value)" class="mood-slider w-full" />
+        <span id="bgmVolumeText" class="text-[10px] font-semibold opacity-65 w-7 text-right">55%</span>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         1. 홈 화면 (오늘의 기록)
+    =========================================== -->
+    <main id="view-home" class="view-section active px-6 pt-2 no-scrollbar">
+      <!-- 오늘의 무드 히어로 카드 (딥 퍼플 그라데이션) -->
+      <div class="hero-purple-card rounded-[28px] p-6 mt-1 flex flex-col items-center text-center relative overflow-hidden">
+        <!-- 은은한 보랏빛 글로우 장식 -->
+        <div class="w-40 h-40 rounded-full bg-[#7c69ef]/25 blur-2xl absolute -top-10 -right-10 pointer-events-none"></div>
+        <div class="w-32 h-32 rounded-full bg-[#b469ef]/20 blur-2xl absolute -bottom-10 -left-10 pointer-events-none"></div>
+
+        <div class="text-[11px] font-medium tracking-widest uppercase text-white/65 mb-1">Today's Reflection</div>
+        <div id="homeTodayDate" class="text-sm font-semibold text-white/95 mb-5">2026년 11월 25일</div>
+        
+        <!-- 중앙 무드 오브제 -->
+        <div id="homeMoodOrb" class="w-22 h-22 w-[88px] h-[88px] rounded-full flex items-center justify-center text-4xl shadow-lg mb-4 animate-float"
+          style="background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.28), rgba(255,255,255,0.06)); border: 1px solid rgba(255,255,255,0.28);">
+          🌙
+        </div>
+
+        <!-- 오늘의 대표 문구 -->
+        <p id="homeMoodQuote" class="font-serif-mood text-[16.5px] leading-relaxed text-white/95 mb-3 px-2 break-keep">
+          "오늘의 차분한 밤공기를 기억하다."
+        </p>
+        <span id="homeMoodBadge" class="inline-block px-3.5 py-1 rounded-full text-xs font-medium bg-white/15 text-white/90 backdrop-blur-sm">
+          #차분함 · 저널 화이트 무드
+        </span>
+      </div>
+
+      <!-- 오늘의 한 줄 감성 질문 (프롬프트) -->
+      <div class="glass-panel rounded-2xl p-4 mt-4 flex items-center justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold text-[#5856d6] mb-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>오늘의 글쓰기 제안</span>
+          </div>
+          <p id="dailyPromptText" class="font-serif-mood text-sm truncate opacity-95">
+            오늘 하루 중 가장 마음이 느리게 흘렀던 순간은 언제인가요?
+          </p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="refreshPrompt()" title="다른 질문 보기" class="p-2 rounded-full bg-black/[0.04] hover:bg-black/[0.08] transition">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="writeWithPrompt()" class="px-3.5 py-1.5 rounded-full btn-indigo-primary text-xs font-medium">
+            답하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 우연한 기억 꺼내기 (On This Day 회고 카드) -->
+      <div id="memoryThrowbackCard" class="hidden glass-panel rounded-2xl p-4 mt-3 border-l-4 border-l-[#5856d6] cursor-pointer hover:shadow-md transition" onclick="openThrowbackEntry()">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center gap-1.5 text-[11px] font-semibold text-[#5856d6]">
+            <i data-lucide="history" class="w-3.5 h-3.5"></i>
+            <span id="throwbackLabel">우연한 기억 꺼내기</span>
+          </div>
+          <button type="button" onclick="event.stopPropagation(); pickRandomThrowback();" title="다른 기억 보기" class="text-[11px] opacity-55 hover:opacity-100 flex items-center gap-0.5">
+            <i data-lucide="shuffle" class="w-3 h-3"></i>
+            <span>다른 기억</span>
+          </button>
+        </div>
+        <p id="throwbackPreviewText" class="font-serif-mood text-xs opacity-85 line-clamp-2 leading-relaxed"></p>
+      </div>
+
+      <!-- 메인 액션 버튼 그룹 (Apple Journal 인디고 블루/퍼플 포인트) -->
+      <div class="mt-4 flex flex-col gap-2.5">
+        <button onclick="openEditor()" class="btn-indigo-primary w-full py-3.5 rounded-2xl font-semibold text-[15px] flex items-center justify-center gap-2">
+          <i data-lucide="pen-line" class="w-4 h-4"></i>
+          <span>오늘의 감정 기록하기</span>
+        </button>
+        <button onclick="switchTab('archive')" class="glass-btn w-full py-3 rounded-2xl font-medium text-[14px] text-[#5856d6] flex items-center justify-center gap-2">
+          <i data-lucide="calendar-heart" class="w-4 h-4"></i>
+          <span>기록 보관소 열어보기</span>
+        </button>
+      </div>
+
+      <!-- 최근 남겨진 한 줄 미리보기 -->
+      <div class="mt-5">
+        <div class="flex items-center justify-between mb-2.5 px-1">
+          <span class="text-xs font-semibold opacity-70">최근 머문 감정들</span>
+          <button onclick="switchTab('archive')" class="text-xs font-medium text-[#5856d6] hover:underline">전체보기</button>
+        </div>
+        <div id="homeRecentList" class="flex flex-col gap-2.5">
+          <!-- JS로 렌더링 -->
+        </div>
+      </div>
+    </main>
+
+    <!-- ==========================================
+         2. 일기 작성 / 수정 화면 (Today's Entry)
+    =========================================== -->
+    <section id="view-write" class="view-section px-6 pt-1 no-scrollbar">
+      <!-- 상단 날짜 및 초기화/닫기 -->
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <input type="date" id="entryDateInput"
+            class="bg-transparent font-serif-mood text-lg font-bold focus:outline-none cursor-pointer" />
+        </div>
+        <button id="cancelEditBtn" onclick="resetEditor()" class="text-xs px-3 py-1.5 rounded-full bg-black/[0.05] hover:bg-black/[0.09] font-medium transition">
+          새로 쓰기
+        </button>
+      </div>
+
+      <!-- 에디터 메인 카드 -->
+      <div class="glass-panel rounded-[26px] p-5 flex-1 flex flex-col justify-between min-h-[430px]">
+        <div>
+          <!-- 감정/무드 선택기 -->
+          <div class="text-[11px] font-semibold opacity-60 mb-2">오늘의 기분은 어떤가요?</div>
+          <div id="moodSelector" class="grid grid-cols-6 gap-1.5 pb-3 border-b border-black/[0.07]">
+            <!-- JS로 감정 버튼 렌더링 -->
+          </div>
+
+          <!-- 선택된 질문 뱃지 (있을 경우) -->
+          <div id="editorPromptBanner" class="hidden mt-3 px-3.5 py-2.5 rounded-xl bg-[#5856d6]/10 text-[#4644b5] text-xs font-serif-mood flex items-center justify-between gap-2">
+            <span id="editorPromptBannerText" class="font-medium"></span>
+            <button onclick="clearEditorPrompt()" class="opacity-60 hover:opacity-100"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+          </div>
+
+          <!-- 감성 텍스트 에디터 -->
+          <textarea id="entryContentInput"
+            placeholder="오늘 마주한 풍경, 스쳐간 생각, 혹은 작은 위로를 천천히 적어보세요..."
+            class="w-full h-56 mt-4 bg-transparent resize-none border-none focus:outline-none font-serif-mood text-[15.5px] leading-[1.95] placeholder:opacity-40"></textarea>
+        </div>
+
+        <!-- 에디터 하단 툴바 -->
+        <div class="pt-3 border-t border-black/[0.07] flex items-center justify-between">
+          <span id="charCount" class="text-xs opacity-55">0자</span>
+          <button onclick="saveEntry()"
+            class="btn-indigo-primary px-6 py-2.5 rounded-full text-sm font-medium flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span id="saveBtnText">기록 남기기</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 분위기 테마(Mood Theme) 선택 바 -->
+      <div class="mt-4 flex items-center justify-between gap-2">
+        <span class="text-xs font-semibold opacity-70 shrink-0 flex items-center gap-1">
+          <i data-lucide="palette" class="w-3.5 h-3.5 text-[#5856d6]"></i> 무드 테마
+        </span>
+        <div id="themeSelector" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+          <!-- JS로 테마 칩 렌더링 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         3. 감정보관소 (아카이브 - 감정 인사이트 & 캘린더 & 피드)
+    =========================================== -->
+    <section id="view-archive" class="view-section px-6 pt-1 no-scrollbar">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="font-serif-mood text-xl font-bold">감정보관소</h2>
+          <p class="text-[11px] opacity-60 mt-0.5">머물렀던 마음의 색과 기록들을 돌아보세요</p>
+        </div>
+        <span id="totalEntriesBadge" class="text-xs px-3 py-1 rounded-full bg-[#5856d6]/12 text-[#5856d6] font-semibold">총 0개의 기록</span>
+      </div>
+
+      <!-- 감정 통계 및 팔레트 인사이트 카드 -->
+      <div id="moodInsightCard" class="glass-panel rounded-[24px] p-4 mb-4">
+        <div class="flex items-center justify-between mb-2.5">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-[#5856d6]">
+            <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
+            <span>나의 감정 팔레트</span>
+          </div>
+          <span id="dominantMoodBadge" class="text-[11px] font-medium opacity-70">가장 짙은 감정: 차분함</span>
+        </div>
+
+        <!-- 감정 비율 컬러 바 -->
+        <div id="moodDistributionBar" class="w-full h-3 rounded-full bg-black/[0.06] overflow-hidden flex gap-[2px] mb-3">
+          <!-- JS로 감정 비율 바 렌더링 -->
+        </div>
+
+        <!-- 감정별 카운트 요약 칩 -->
+        <div id="moodStatsGrid" class="grid grid-cols-3 gap-1.5">
+          <!-- JS로 감정별 카운트 카드 렌더링 -->
+        </div>
+
+        <!-- 월간 감정 온기 흐름 타임라인 (최근 기록 순 감정 컬러 스펙트럼) -->
+        <div class="mt-3.5 pt-3 border-t border-black/[0.06]">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-semibold opacity-75">마음의 온도 흐름 (최근 기록순)</span>
+            <span id="moodFlowPeriodText" class="text-[10px] opacity-55">최근 10개 기록</span>
+          </div>
+          <div id="moodWarmthTimeline" class="w-full h-6 rounded-xl overflow-hidden flex items-center bg-black/[0.04] p-0.5 gap-0.5">
+            <!-- JS로 감정 흐름 타임라인 바 렌더링 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 월별 캘린더 카드 -->
+      <div class="glass-panel rounded-[24px] p-4 mb-4">
+        <div class="flex items-center justify-between mb-3 px-1">
+          <span id="calendarMonthLabel" class="font-semibold text-sm">2026년 11월</span>
+          <div class="flex items-center gap-1">
+            <button onclick="changeCalendarMonth(-1)" class="p-1.5 rounded-full hover:bg-black/[0.05] transition">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button onclick="resetCalendarToToday()" class="text-[11px] px-2.5 py-1 rounded-full bg-[#5856d6]/10 text-[#5856d6] font-medium hover:bg-[#5856d6]/20">
+              오늘
+            </button>
+            <button onclick="changeCalendarMonth(1)" class="p-1.5 rounded-full hover:bg-black/[0.05] transition">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 요일 헤더 -->
+        <div class="calendar-grid text-center text-[10px] font-semibold opacity-50 mb-1.5">
+          <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+        </div>
+
+        <!-- 날짜 그리드 -->
+        <div id="calendarDaysGrid" class="calendar-grid">
+          <!-- JS로 날짜 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 검색 및 감정 필터 칩 -->
+      <div class="mb-3 space-y-2.5">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 opacity-45"></i>
+          <input type="text" id="archiveSearchInput" oninput="renderArchiveFeed()" placeholder="기억 속 단어 검색..."
+            class="input-surface w-full pl-9 pr-8 py-2.5 rounded-full bg-white text-xs border border-black/[0.06] shadow-sm focus:outline-none focus:border-[#5856d6]/40" />
+          <button id="clearFilterBtn" onclick="clearArchiveFilters()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] text-[#5856d6] font-medium underline">
+            초기화
+          </button>
+        </div>
+
+        <!-- 감정 필터 칩 리스트 -->
+        <div id="archiveMoodFilters" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+          <!-- JS로 필터 칩 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 선택된 날짜 안내 배너 -->
+      <div id="selectedDateFilterBanner" class="hidden mb-2.5 px-3.5 py-2 rounded-xl bg-[#5856d6]/10 text-[#5856d6] text-xs flex items-center justify-between">
+        <span id="selectedDateFilterText" class="font-semibold"></span>
+        <button onclick="clearDateSelection()" class="text-xs font-semibold underline">전체 날짜 보기</button>
+      </div>
+
+      <!-- 일기 피드 리스트 -->
+      <div id="archiveFeedList" class="flex flex-col gap-3 pb-4">
+        <!-- JS로 일기 카드 렌더링 -->
+      </div>
+    </section>
+
+    <!-- ==========================================
+         하단 탭 네비게이션 (Apple Journal 플로팅 + 버튼 스타일)
+    =========================================== -->
+    <nav class="bottom-nav absolute bottom-0 left-0 right-0 h-[74px] bg-white/90 backdrop-blur-xl border-t border-black/[0.06] px-8 flex items-center justify-around z-30">
+      <button onclick="switchTab('home')" id="nav-home" class="nav-item flex flex-col items-center gap-1 text-[#5856d6] transition">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span class="text-[10px] font-semibold">홈</span>
+      </button>
+
+      <button onclick="openEditor()" id="nav-write" class="nav-item flex flex-col items-center justify-center -mt-6">
+        <div class="w-14 h-14 rounded-full bg-white text-[#5856d6] shadow-[0_8px_24px_rgba(88,86,214,0.28)] border border-black/[0.05] flex items-center justify-center hover:scale-105 active:scale-95 transition">
+          <i data-lucide="plus" class="w-7 h-7 stroke-[2.4]"></i>
+        </div>
+        <span class="text-[10px] font-semibold mt-1 opacity-75">기록하기</span>
+      </button>
+
+      <button onclick="switchTab('archive')" id="nav-archive" class="nav-item flex flex-col items-center gap-1 text-neutral-400 transition">
+        <i data-lucide="calendar-heart" class="w-5 h-5"></i>
+        <span class="text-[10px] font-semibold">감정보관소</span>
+      </button>
+    </nav>
+
+    <!-- ==========================================
+         일기 상세 보기 & 감성 카드 저장 모달
+    =========================================== -->
+    <div id="detailModal" class="hidden absolute inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+      <div id="detailCardSurface" class="w-full rounded-[32px] p-6 shadow-2xl border border-white/60 relative overflow-hidden transition-all"
+        style="background: #ffffff; color: #1c1c1e;">
+        
+        <!-- 상단 닫기 및 날짜 -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2.5">
+            <span id="modalMoodEmoji" class="text-2xl">🌙</span>
+            <div>
+              <div id="modalDateText" class="text-xs font-bold opacity-85">2026년 11월 25일</div>
+              <div id="modalMoodLabel" class="text-xs font-medium opacity-60">차분함 · 저널 화이트 무드</div>
+            </div>
+          </div>
+          <button onclick="closeDetailModal()" class="p-2 rounded-full bg-black/[0.06] hover:bg-black/10 transition">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- 일기 본문 -->
+        <div class="my-4 max-h-[45vh] overflow-y-auto no-scrollbar">
+          <p id="modalContentText" class="font-serif-mood text-[16px] leading-[1.95] whitespace-pre-wrap break-keep"></p>
+        </div>
+
+        <!-- 하단 액션 버튼들 (이미지 저장, 수정, 삭제) -->
+        <div class="pt-4 border-t border-black/[0.08] flex items-center justify-between gap-2">
+          <button onclick="downloadMoodCardImage()"
+            class="btn-indigo-primary flex-1 py-2.5 px-3 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>감성 카드 저장 (PNG)</span>
+          </button>
+          <button onclick="editCurrentModalEntry()" title="수정하기"
+            class="p-2.5 rounded-xl bg-black/[0.06] hover:bg-black/10 transition">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
+          </button>
+          <button onclick="askDeleteCurrentEntry()" title="삭제하기"
+            class="p-2.5 rounded-xl bg-red-500/12 hover:bg-red-500/20 text-red-600 transition">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- 삭제 인라인 확인 바 -->
+        <div id="deleteConfirmBar" class="hidden mt-3 p-3 rounded-xl bg-red-50 border border-red-200 flex items-center justify-between text-xs text-red-900">
+          <span>이 기록을 정말 지울까요?</span>
+          <div class="flex gap-2">
+            <button onclick="cancelDelete()" class="px-2.5 py-1 rounded-lg bg-white border border-red-200">취소</button>
+            <button onclick="confirmDeleteEntry()" class="px-2.5 py-1 rounded-lg bg-red-600 text-white font-semibold">삭제</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 토스트 알림 메시지 -->
+    <div id="toastMessage" class="pointer-events-none opacity-0 transition-all duration-300 absolute top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-[#2a1a40] text-white text-xs font-medium shadow-lg whitespace-nowrap">
+      저장되었습니다
+    </div>
+  </div>
+
+  <!-- 감성 카드 PNG 렌더링용 숨김 캔버스 -->
+  <canvas id="exportCanvas" width="1080" height="1350" class="hidden"></canvas>
+
+  <script>
+    /**
+     * ============================================================================
+     * 1. 데이터 정의 (감정 프리셋, Apple Journal 영감 무드 테마, 감성 질문)
+     * ============================================================================
+     */
+    const MOODS = [
+      { id: 'calm', label: '차분함', emoji: '🌙', color: '#5856d6', quote: '오늘의 차분한 밤공기를 기억하다.' },
+      { id: 'flutter', label: '설렘', emoji: '✨', color: '#ff7a59', quote: '작은 설렘이 하루를 환하게 밝혔다.' },
+      { id: 'sentimental', label: '센치함', emoji: '🌧️', color: '#38bdf8', quote: '빗소리처럼 조용히 스며드는 생각들.' },
+      { id: 'dreamy', label: '몽환', emoji: '🫧', color: '#8b5cf6', quote: '꿈과 현실 사이, 어딘가의 느린 오후.' },
+      { id: 'grateful', label: '감사', emoji: '🌿', color: '#34c759', quote: '소소한 다정함이 마음을 채운 하루.' },
+      { id: 'tired', label: '피곤함', emoji: '☕', color: '#a78bfa', quote: '수고한 나에게 따뜻한 쉼표를 건네다.' }
+    ];
+
+    const THEMES = [
+      {
+        id: 'journal-white',
+        name: '저널 화이트',
+        gradient: '#f6f5f8',
+        cardGradient: ['#ffffff', '#f5f4f9'],
+        dot: '#5856d6',
+        isDark: false
+      },
+      {
+        id: 'lavender-mist',
+        name: '라벤더 안개',
+        gradient: 'linear-gradient(155deg, #f3f0fa 0%, #e7e1f7 55%, #dcd3f2 100%)',
+        cardGradient: ['#f8f6fc', '#e9e3f7'],
+        dot: '#9b87f5',
+        isDark: false
+      },
+      {
+        id: 'peach-walk',
+        name: '피치 산책',
+        gradient: 'linear-gradient(155deg, #fdf3ef 0%, #fae4dc 55%, #f5d5c8 100%)',
+        cardGradient: ['#fff8f5', '#fbe6de'],
+        dot: '#ff9678',
+        isDark: false
+      },
+      {
+        id: 'meadow-green',
+        name: '초원 산책',
+        gradient: 'linear-gradient(155deg, #eff7f1 0%, #dfeee3 55%, #cfe5d5 100%)',
+        cardGradient: ['#f6fbf7', '#e1f0e5'],
+        dot: '#4cd964',
+        isDark: false
+      },
+      {
+        id: 'deep-purple',
+        name: '딥 퍼플 나이트',
+        gradient: 'linear-gradient(155deg, #3b2654 0%, #241736 55%, #170e24 100%)',
+        cardGradient: ['#36234d', '#1f132e'],
+        dot: '#3b2654',
+        isDark: true
+      }
+    ];
+
+    const PROMPTS = [
+      '오늘 하루 중 가장 마음이 느리게 흘렀던 순간은 언제인가요?',
+      '지금 창밖의 풍경이나 방 안의 공기는 어떤 색을 띠고 있나요?',
+      '오늘 나에게 가장 다정했던 말이나 행동 하나를 꼽는다면?',
+      '아무에게도 말하지 않았지만, 오늘 문득 스쳐간 생각은 무엇인가요?',
+      '오늘의 플레이리스트에 어울리는 단 하나의 장면은 무엇인가요?',
+      '내일의 나에게 미리 건네고 싶은 짧은 응원의 문장은?'
+    ];
+
+    const STORAGE_KEY = 'mood_vibe_diary_entries_v1';
+
+    /**
+     * ============================================================================
+     * 2. 애플리케이션 상태 (State)
+     * ============================================================================
+     */
+    let entries = [];
+    let currentTab = 'home';
+    let selectedMoodId = 'calm';
+    let selectedThemeId = 'journal-white';
+    let editingEntryId = null;
+    let activePromptIndex = 0;
+
+    // 아카이브 & 캘린더 상태
+    const now = new Date();
+    let calYear = now.getFullYear();
+    let calMonth = now.getMonth(); // 0 ~ 11
+    let filterDateStr = null; // 'YYYY-MM-DD'
+    let filterMoodId = 'all';
+    let modalEntryId = null;
+    let throwbackEntryId = null;
+
+    // Web Audio API 배경음악(BGM) & 앰비언트 플레이어 상태
+    const BGM_TRACKS = [
+      { id: 'piano', title: '새벽의 오르골 피아노', sub: '잔잔한 코드 진행 · 집중 & 회고', icon: '🎹' },
+      { id: 'rain', title: '창밖의 잔잔한 빗소리', sub: '포근한 핑크 노이즈 · 차분함', icon: '🌧️' },
+      { id: 'fireplace', title: '따뜻한 밤의 모닥불', sub: '은은한 장작 온기 · 깊은 휴식', icon: '🔥' }
+    ];
+    let audioCtx = null;
+    let masterGainNode = null;
+    let activeAudioNodes = [];
+    let pianoLoopTimer = null;
+    let currentTrackIndex = 0;
+    let isPlayingSound = false;
+    let bgmVolume = 0.55;
+
+    /**
+     * ============================================================================
+     * 3. 초기화 및 샘플 데이터 로드 (localStorage)
+     * ============================================================================
+     */
+    function initApp() {
+      loadEntries();
+      renderMoodSelector();
+      renderThemeSelector();
+      renderArchiveMoodFilters();
+      renderTrackChips();
+
+      // 오늘 날짜 세팅
+      const todayStr = getTodayDateString();
+      document.getElementById('entryDateInput').value = todayStr;
+      document.getElementById('homeTodayDate').textContent = formatKoreanDate(todayStr);
+
+      // 첫 화면 반영
+      applyTheme(selectedThemeId);
+      updateHomeView();
+      pickRandomThrowback();
+      renderCalendar();
+      renderArchiveFeed();
+      lucide.createIcons();
+
+      // 글자수 카운터 이벤트
+      const textarea = document.getElementById('entryContentInput');
+      textarea.addEventListener('input', () => {
+        document.getElementById('charCount').textContent = `${textarea.value.length}자`;
+      });
+    }
+
+    function getTodayDateString() {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function getOffsetDateString(daysAgo) {
+      const d = new Date();
+      d.setDate(d.getDate() - daysAgo);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function formatKoreanDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      const weekdays = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      return `${y}년 ${m}월 ${d}일 ${weekdays[dateObj.getDay()]}`;
+    }
+
+    function loadEntries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          entries = JSON.parse(raw);
+        } else {
+          // 첫 방문 시 분위기를 바로 느낄 수 있는 감성 샘플 데이터 3개 제공
+          entries = [
+            {
+              id: 'sample-1',
+              date: getTodayDateString(),
+              moodId: 'calm',
+              themeId: 'journal-white',
+              content: '오랜만에 동네 산책을 했다.\n이어폰 너머 들리는 로파이 음악과 선선한 밤공기가 완벽하게 어우러진 시간.\n이런 조용한 순간들이 모여 하루를 다시 충전하게 해준다.',
+              createdAt: Date.now()
+            },
+            {
+              id: 'sample-2',
+              date: getOffsetDateString(2),
+              moodId: 'flutter',
+              themeId: 'peach-walk',
+              content: '오후 햇살이 창가 테이블에 길게 내려앉았다.\n따뜻한 드립 커피 한 잔을 내리고 좋아하는 책의 몇 페이지를 천천히 넘겼다. 별일 없지만 오래 기억하고 싶은 오후.',
+              createdAt: Date.now() - 172800000
+            },
+            {
+              id: 'sample-3',
+              date: getOffsetDateString(5),
+              moodId: 'grateful',
+              themeId: 'meadow-green',
+              content: '가늘게 내리는 비 덕분에 도시의 소음이 한 톤 낮아졌다.\n창문에 맺힌 물방울을 바라보며 지난 계절의 사진들을 꺼내 보았다. 조금은 센치해도 괜찮은 밤.',
+              createdAt: Date.now() - 432000000
+            }
+          ];
+          saveEntriesToStorage();
+        }
+      } catch (e) {
+        console.error('데이터 로드 오류:', e);
+        entries = [];
+      }
+    }
+
+    function saveEntriesToStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      } catch (e) {
+        showToast('저장 공간이 부족하여 기록을 저장하지 못했습니다.');
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 4. 내비게이션 및 테마 전환
+     * ============================================================================
+     */
+    function switchTab(tabName) {
+      currentTab = tabName;
+
+      // 뷰 섹션 토글
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(`view-${tabName}`).classList.add('active');
+
+      // 하단 탭 스타일 업데이트 (인디고 퍼플 액센트)
+      const navHome = document.getElementById('nav-home');
+      const navArchive = document.getElementById('nav-archive');
+      const isDark = THEMES.find(t => t.id === selectedThemeId)?.isDark;
+
+      const activeColor = isDark ? 'text-[#9b87f5]' : 'text-[#5856d6]';
+      const inactiveColor = isDark ? 'text-white/45' : 'text-neutral-400';
+
+      if (tabName === 'home') {
+        updateHomeView();
+        pickRandomThrowback();
+      }
+      if (tabName === 'archive') {
+        renderMoodInsights();
+        renderCalendar();
+        renderArchiveFeed();
+      }
+      lucide.createIcons();
+    }
+
+    function applyTheme(themeId) {
+      selectedThemeId = themeId;
+      const theme = THEMES.find(t => t.id === themeId) || THEMES[0];
+      const shell = document.getElementById('appShell');
+
+      shell.style.setProperty('--bg-gradient', theme.gradient);
+      if (theme.isDark) {
+        shell.classList.add('theme-dark');
+      } else {
+        shell.classList.remove('theme-dark');
+      }
+
+      // 테마 선택 UI 하이라이트 갱신
+      document.querySelectorAll('.theme-chip').forEach(chip => {
+        if (chip.dataset.themeId === themeId) {
+          chip.classList.add('ring-2', 'ring-[#5856d6]', 'scale-105');
+        } else {
+          chip.classList.remove('ring-2', 'ring-[#5856d6]', 'scale-105');
+        }
+      });
+
+      switchTab(currentTab);
+    }
+
+    /**
+     * ============================================================================
+     * 5. 홈 화면 로직
+     * ============================================================================
+     */
+    function updateHomeView() {
+      const todayStr = getTodayDateString();
+      // 오늘 날짜에 작성된 가장 최신 일기가 있으면 홈 카드에 반영
+      const todayEntries = entries.filter(e => e.date === todayStr).sort((a, b) => b.createdAt - a.createdAt);
+      const latestEntry = todayEntries[0] || entries.sort((a, b) => b.createdAt - a.createdAt)[0];
+
+      if (latestEntry) {
+        const mood = MOODS.find(m => m.id === latestEntry.moodId) || MOODS[0];
+        const theme = THEMES.find(t => t.id === latestEntry.themeId) || THEMES[0];
+        document.getElementById('homeMoodOrb').textContent = mood.emoji;
+        document.getElementById('homeMoodQuote').textContent = `"${mood.quote}"`;
+        document.getElementById('homeMoodBadge').textContent = `#${mood.label} · ${theme.name} 무드`;
+      }
+
+      // 최근 기록 최대 2개 표시
+      const recentContainer = document.getElementById('homeRecentList');
+      const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt).slice(0, 2);
+
+      if (sorted.length === 0) {
+        recentContainer.innerHTML = `<div class="glass-panel rounded-2xl p-4 text-center text-xs opacity-65">아직 남겨진 기록이 없어요. 첫 감정을 기록해보세요.</div>`;
+        return;
+      }
+
+      recentContainer.innerHTML = sorted.map(entry => {
+        const mood = MOODS.find(m => m.id === entry.moodId) || MOODS[0];
+        return `
+          <div onclick="openDetailModal('${entry.id}')" class="glass-panel rounded-2xl p-3.5 flex items-center gap-3.5 cursor-pointer hover:shadow-md transition">
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
+              style="background-color: ${mood.color}1a; border: 1px solid ${mood.color}33;">
+              ${mood.emoji}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="text-xs font-bold opacity-90">${formatKoreanDate(entry.date).replace(/^\d+년 /, '')}</span>
+                <span class="text-[11px] font-medium" style="color: ${mood.color};">#${mood.label}</span>
+              </div>
+              <p class="font-serif-mood text-xs opacity-75 truncate">${escapeHtml(entry.content)}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * 우연한 기억 꺼내기 (On This Day 회고 카드)
+     */
+    function pickRandomThrowback() {
+      const card = document.getElementById('memoryThrowbackCard');
+      if (!entries || entries.length === 0) {
+        card.classList.add('hidden');
+        return;
+      }
+
+      // 오늘 이외의 기록이 있으면 우선 선택, 없으면 전체 중 랜덤
+      const todayStr = getTodayDateString();
+      const pastEntries = entries.filter(e => e.date !== todayStr);
+      const pool = pastEntries.length > 0 ? pastEntries : entries;
+
+      // 현재 띄워진 기억과 다른 기억을 고르도록 시도
+      let candidates = pool.filter(e => e.id !== throwbackEntryId);
+      if (candidates.length === 0) candidates = pool;
+
+      const picked = candidates[Math.floor(Math.random() * candidates.length)];
+      throwbackEntryId = picked.id;
+
+      const mood = MOODS.find(m => m.id === picked.moodId) || MOODS[0];
+      const diffDays = Math.max(0, Math.round((new Date(todayStr) - new Date(picked.date)) / (1000 * 60 * 60 * 24)));
+      const timeAgoText = diffDays === 0 ? '오늘 남긴 기억' : `${diffDays}일 전의 기억`;
+
+      document.getElementById('throwbackLabel').textContent = `${mood.emoji} ${timeAgoText} (${formatKoreanDate(picked.date).replace(/^\d+년 /, '')})`;
+      document.getElementById('throwbackPreviewText').textContent = `"${picked.content}"`;
+      card.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function openThrowbackEntry() {
+      if (throwbackEntryId) {
+        openDetailModal(throwbackEntryId);
+      }
+    }
+
+    function refreshPrompt() {
+      activePromptIndex = (activePromptIndex + 1) % PROMPTS.length;
+      const el = document.getElementById('dailyPromptText');
+      el.style.opacity = 0;
+      setTimeout(() => {
+        el.textContent = PROMPTS[activePromptIndex];
+        el.style.opacity = 0.95;
+      }, 150);
+    }
+
+    function writeWithPrompt() {
+      openEditor();
+      const promptText = PROMPTS[activePromptIndex];
+      const banner = document.getElementById('editorPromptBanner');
+      document.getElementById('editorPromptBannerText').textContent = `Q. ${promptText}`;
+      banner.classList.remove('hidden');
+    }
+
+    function clearEditorPrompt() {
+      document.getElementById('editorPromptBanner').classList.add('hidden');
+    }
+
+    /**
+     * ============================================================================
+     * 6. 일기 작성 / 수정 에디터 로직
+     * ============================================================================
+     */
+    function renderMoodSelector() {
+      const container = document.getElementById('moodSelector');
+      container.innerHTML = MOODS.map(m => `
+        <button type="button" onclick="selectMood('${m.id}')" data-mood-id="${m.id}"
+          class="mood-btn flex flex-col items-center py-2 px-1 rounded-xl transition ${m.id === selectedMoodId ? 'bg-[#5856d6]/12 text-[#5856d6] shadow-sm scale-105' : 'opacity-65 hover:opacity-100'}">
+          <span class="text-xl mb-1">${m.emoji}</span>
+          <span class="text-[10px] font-semibold">${m.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function selectMood(moodId) {
+      selectedMoodId = moodId;
+      document.querySelectorAll('.mood-btn').forEach(btn => {
+        if (btn.dataset.moodId === moodId) {
+          btn.classList.add('bg-[#5856d6]/12', 'text-[#5856d6]', 'shadow-sm', 'scale-105');
+          btn.classList.remove('opacity-65');
+        } else {
+          btn.classList.remove('bg-[#5856d6]/12', 'text-[#5856d6]', 'shadow-sm', 'scale-105');
+          btn.classList.add('opacity-65');
+        }
+      });
+    }
+
+    function renderThemeSelector() {
+      const container = document.getElementById('themeSelector');
+      container.innerHTML = THEMES.map(t => `
+        <button type="button" onclick="applyTheme('${t.id}')" data-theme-id="${t.id}"
+          class="theme-chip px-3 py-1.5 rounded-full glass-panel text-[11px] font-medium flex items-center gap-1.5 shrink-0 transition">
+          <span class="w-3 h-3 rounded-full border border-black/15" style="background:${t.dot}"></span>
+          <span>${t.name}</span>
+        </button>
+      `).join('');
+    }
+
+    function openEditor(entryToEdit = null) {
+      switchTab('write');
+      clearEditorPrompt();
+
+      if (entryToEdit) {
+        editingEntryId = entryToEdit.id;
+        document.getElementById('entryDateInput').value = entryToEdit.date;
+        document.getElementById('entryContentInput').value = entryToEdit.content;
+        document.getElementById('charCount').textContent = `${entryToEdit.content.length}자`;
+        document.getElementById('saveBtnText').textContent = '수정 완료';
+        selectMood(entryToEdit.moodId);
+        applyTheme(entryToEdit.themeId);
+      } else {
+        resetEditor();
+      }
+    }
+
+    function resetEditor() {
+      editingEntryId = null;
+      document.getElementById('entryDateInput').value = getTodayDateString();
+      document.getElementById('entryContentInput').value = '';
+      document.getElementById('charCount').textContent = '0자';
+      document.getElementById('saveBtnText').textContent = '기록 남기기';
+      clearEditorPrompt();
+      selectMood('calm');
+    }
+
+    function saveEntry() {
+      const dateVal = document.getElementById('entryDateInput').value || getTodayDateString();
+      const contentVal = document.getElementById('entryContentInput').value.trim();
+
+      if (!contentVal) {
+        showToast('오늘의 마음을 한 줄이라도 적어주세요 ✍️');
+        document.getElementById('entryContentInput').focus();
+        return;
+      }
+
+      // 질문 프롬프트가 켜져 있었다면 상단에 자연스럽게 포함 가능 (선택 사항)
+      const promptBanner = document.getElementById('editorPromptBanner');
+      let finalContent = contentVal;
+      if (!promptBanner.classList.contains('hidden')) {
+        const qText = document.getElementById('editorPromptBannerText').textContent;
+        finalContent = `${qText}\n\n${contentVal}`;
+      }
+
+      if (editingEntryId) {
+        const idx = entries.findIndex(e => e.id === editingEntryId);
+        if (idx !== -1) {
+          entries[idx] = {
+            ...entries[idx],
+            date: dateVal,
+            moodId: selectedMoodId,
+            themeId: selectedThemeId,
+            content: finalContent
+          };
+        }
+        showToast('기록이 다듬어졌어요 ✨');
+      } else {
+        const newEntry = {
+          id: 'entry-' + Date.now(),
+          date: dateVal,
+          moodId: selectedMoodId,
+          themeId: selectedThemeId,
+          content: finalContent,
+          createdAt: Date.now()
+        };
+        entries.unshift(newEntry);
+        showToast('오늘의 감성이 소중히 저장되었어요 🌙');
+      }
+
+      saveEntriesToStorage();
+      resetEditor();
+      switchTab('archive');
+    }
+
+    /**
+     * ============================================================================
+     * 7. 감정보관소 (감정 통계 인사이트 + 캘린더 + 피드 + 필터)
+     * ============================================================================
+     */
+    function renderMoodInsights() {
+      const barEl = document.getElementById('moodDistributionBar');
+      const gridEl = document.getElementById('moodStatsGrid');
+      const dominantEl = document.getElementById('dominantMoodBadge');
+
+      if (!entries || entries.length === 0) {
+        dominantEl.textContent = '기록을 남기면 분석이 시작돼요';
+        barEl.innerHTML = `<div class="w-full h-full bg-black/[0.04]"></div>`;
+        gridEl.innerHTML = MOODS.map(m => `
+          <div class="px-2.5 py-1.5 rounded-xl bg-black/[0.03] flex items-center justify-between text-[11px]">
+            <span>${m.emoji} ${m.label}</span>
+            <span class="font-semibold opacity-50">0</span>
+          </div>
+        `).join('');
+        return;
+      }
+
+      // 감정별 개수 집계
+      const counts = MOODS.map(m => ({
+        ...m,
+        count: entries.filter(e => e.moodId === m.id).length
+      }));
+
+      // 가장 많은 감정 찾기
+      const topMood = [...counts].sort((a, b) => b.count - a.count)[0];
+      dominantEl.textContent = topMood && topMood.count > 0
+        ? `가장 짙은 감정: ${topMood.emoji} ${topMood.label}`
+        : '감정을 기록해보세요';
+
+      // 비율 바 렌더링
+      const total = entries.length;
+      barEl.innerHTML = counts
+        .filter(c => c.count > 0)
+        .map(c => {
+          const pct = (c.count / total) * 100;
+          return `<div style="width: ${pct}%; background-color: ${c.color};" title="${c.label}: ${c.count}개 (${Math.round(pct)}%)" class="h-full transition-all duration-500"></div>`;
+        })
+        .join('');
+
+      // 감정별 클릭 가능한 통계 칩 렌더링 (클릭 시 해당 감정 필터링)
+      gridEl.innerHTML = counts.map(c => {
+        const isSelected = filterMoodId === c.id;
+        return `
+          <button type="button" onclick="setMoodFilter('${isSelected ? 'all' : c.id}')"
+            class="px-2.5 py-1.5 rounded-xl flex items-center justify-between text-[11px] transition
+            ${isSelected ? 'ring-2 ring-[#5856d6] bg-[#5856d6]/12 font-bold' : 'bg-black/[0.035] hover:bg-black/[0.07]'}">
+            <span class="truncate">${c.emoji} ${c.label}</span>
+            <span class="font-bold ml-1" style="color: ${c.count > 0 ? c.color : 'inherit'};">${c.count}</span>
+          </button>
+        `;
+      }).join('');
+
+      // 월간 감정 온기 흐름 타임라인 렌더링 (오래된 순 -> 최신 순 최근 12개)
+      const flowEl = document.getElementById('moodWarmthTimeline');
+      const flowPeriodEl = document.getElementById('moodFlowPeriodText');
+      const recentChronological = [...entries]
+        .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt)
+        .slice(-12);
+
+      flowPeriodEl.textContent = `최근 ${recentChronological.length}개 기록 흐름`;
+      flowEl.innerHTML = recentChronological.map(item => {
+        const m = MOODS.find(x => x.id === item.moodId) || MOODS[0];
+        return `
+          <button type="button" onclick="openDetailModal('${item.id}')"
+            title="${formatKoreanDate(item.date)} · ${m.label}"
+            style="background-color: ${m.color};"
+            class="flex-1 h-full rounded-lg flex items-center justify-center text-[10px] hover:scale-y-110 transition cursor-pointer">
+            <span class="drop-shadow-sm">${m.emoji}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function changeCalendarMonth(delta) {
+      calMonth += delta;
+      if (calMonth < 0) {
+        calMonth = 11;
+        calYear--;
+      } else if (calMonth > 11) {
+        calMonth = 0;
+        calYear++;
+      }
+      renderCalendar();
+    }
+
+    function resetCalendarToToday() {
+      const d = new Date();
+      calYear = d.getFullYear();
+      calMonth = d.getMonth();
+      filterDateStr = null;
+      renderCalendar();
+      renderArchiveFeed();
+    }
+
+    function renderCalendar() {
+      document.getElementById('calendarMonthLabel').textContent = `${calYear}년 ${calMonth + 1}월`;
+      const grid = document.getElementById('calendarDaysGrid');
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay();
+      const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+      const todayStr = getTodayDateString();
+
+      let html = '';
+      // 빈 칸 채우기
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="h-10"></div>`;
+      }
+
+      // 날짜 채우기
+      for (let day = 1; day <= lastDate; day++) {
+        const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dayEntries = entries.filter(e => e.date === dateStr);
+        const isSelected = filterDateStr === dateStr;
+        const isToday = dateStr === todayStr;
+
+        // 해당 날짜의 감정 컬러 도트 생성 (최대 3개)
+        const dotsHtml = dayEntries.slice(0, 3).map(e => {
+          const mood = MOODS.find(m => m.id === e.moodId) || MOODS[0];
+          return `<span class="w-1.5 h-1.5 rounded-full" style="background-color: ${mood.color};"></span>`;
+        }).join('');
+
+        html += `
+          <button type="button" onclick="toggleDateFilter('${dateStr}')"
+            class="h-10 rounded-xl flex flex-col items-center justify-center relative transition
+            ${isSelected ? 'bg-[#5856d6] text-white font-bold shadow-sm' : isToday ? 'bg-[#5856d6]/12 text-[#5856d6] font-bold' : 'hover:bg-black/[0.04]'}">
+            <span class="text-xs leading-none mb-1">${day}</span>
+            <div class="flex items-center gap-0.5 h-1.5">${dotsHtml}</div>
+          </button>
+        `;
+      }
+
+      grid.innerHTML = html;
+    }
+
+    function toggleDateFilter(dateStr) {
+      if (filterDateStr === dateStr) {
+        filterDateStr = null;
+      } else {
+        filterDateStr = dateStr;
+      }
+      renderCalendar();
+      renderArchiveFeed();
+    }
+
+    function clearDateSelection() {
+      filterDateStr = null;
+      renderCalendar();
+      renderArchiveFeed();
+    }
+
+    function renderArchiveMoodFilters() {
+      const container = document.getElementById('archiveMoodFilters');
+      const allChip = `
+        <button onclick="setMoodFilter('all')" data-filter-mood="all"
+          class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-medium shrink-0 transition bg-[#5856d6] text-white">
+          전체
+        </button>
+      `;
+      const moodChips = MOODS.map(m => `
+        <button onclick="setMoodFilter('${m.id}')" data-filter-mood="${m.id}"
+          class="filter-chip px-3 py-1.5 rounded-full text-xs font-medium shrink-0 transition glass-panel hover:opacity-90">
+          ${m.emoji} ${m.label}
+        </button>
+      `).join('');
+      container.innerHTML = allChip + moodChips;
+    }
+
+    function setMoodFilter(moodId) {
+      filterMoodId = moodId;
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        if (chip.dataset.filterMood === moodId) {
+          chip.classList.add('bg-[#5856d6]', 'text-white');
+          chip.classList.remove('glass-panel');
+        } else {
+          chip.classList.remove('bg-[#5856d6]', 'text-white');
+          chip.classList.add('glass-panel');
+        }
+      });
+      renderMoodInsights();
+      renderArchiveFeed();
+    }
+
+    function clearArchiveFilters() {
+      filterDateStr = null;
+      filterMoodId = 'all';
+      document.getElementById('archiveSearchInput').value = '';
+      setMoodFilter('all');
+      renderMoodInsights();
+      renderCalendar();
+      renderArchiveFeed();
+    }
+
+    function renderArchiveFeed() {
+      const keyword = document.getElementById('archiveSearchInput').value.trim().toLowerCase();
+      const dateBanner = document.getElementById('selectedDateFilterBanner');
+      const clearBtn = document.getElementById('clearFilterBtn');
+
+      // 필터 초기화 버튼 표시 여부
+      if (keyword || filterDateStr || filterMoodId !== 'all') {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      if (filterDateStr) {
+        dateBanner.classList.remove('hidden');
+        document.getElementById('selectedDateFilterText').textContent = `📅 ${formatKoreanDate(filterDateStr)}의 기록`;
+      } else {
+        dateBanner.classList.add('hidden');
+      }
+
+      const filtered = entries
+        .filter(e => {
+          if (filterDateStr && e.date !== filterDateStr) return false;
+          if (filterMoodId !== 'all' && e.moodId !== filterMoodId) return false;
+          if (keyword && !e.content.toLowerCase().includes(keyword)) return false;
+          return true;
+        })
+        .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+
+      document.getElementById('totalEntriesBadge').textContent = `총 ${entries.length}개의 기록`;
+
+      const listEl = document.getElementById('archiveFeedList');
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="glass-panel rounded-2xl p-8 text-center">
+            <div class="text-2xl mb-2">🍃</div>
+            <p class="font-serif-mood text-sm opacity-75">조건에 맞는 기록이 아직 없어요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(entry => {
+        const mood = MOODS.find(m => m.id === entry.moodId) || MOODS[0];
+        const theme = THEMES.find(t => t.id === entry.themeId) || THEMES[0];
+        return `
+          <article onclick="openDetailModal('${entry.id}')"
+            class="glass-panel rounded-2xl p-4 flex items-start gap-3.5 cursor-pointer hover:shadow-md transition">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 border border-black/[0.05]"
+              style="background: linear-gradient(135deg, ${theme.cardGradient[0]}, ${theme.cardGradient[1]});">
+              ${mood.emoji}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-bold opacity-90">${formatKoreanDate(entry.date)}</span>
+                <span class="text-[11px] px-2 py-0.5 rounded-full font-medium" style="background-color: ${mood.color}18; color: ${mood.color};">${mood.label}</span>
+              </div>
+              <p class="font-serif-mood text-[13.5px] leading-relaxed opacity-85 line-clamp-2 break-keep">
+                ${escapeHtml(entry.content)}
+              </p>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    /**
+     * ============================================================================
+     * 9. Web Audio API 기반 감성 배경음악(BGM) & 앰비언트 플레이어
+     * ============================================================================
+     */
+    function toggleAudioDrawer() {
+      const drawer = document.getElementById('audioPlayerDrawer');
+      drawer.classList.toggle('hidden');
+      lucide.createIcons();
+    }
+
+    function renderTrackChips() {
+      const container = document.getElementById('trackListChips');
+      if (!container) return;
+      container.innerHTML = BGM_TRACKS.map((t, idx) => {
+        const isCurrent = idx === currentTrackIndex;
+        return `
+          <button type="button" onclick="selectTrack(${idx})"
+            class="px-2 py-2 rounded-xl text-[11px] font-medium flex flex-col items-center gap-1 transition
+            ${isCurrent ? 'bg-[#5856d6] text-white shadow-sm' : 'bg-black/[0.04] hover:bg-black/[0.08]'}">
+            <span class="text-sm">${t.icon}</span>
+            <span class="truncate w-full text-center text-[10px]">${t.title.split(' ').pop()}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function updatePlayerUI() {
+      const track = BGM_TRACKS[currentTrackIndex];
+      document.getElementById('currentTrackTitle').textContent = `${track.icon} ${track.title}`;
+      document.getElementById('currentTrackSub').textContent = track.sub;
+
+      const btn = document.getElementById('soundToggleBtn');
+      const label = document.getElementById('soundLabel');
+      const iconEl = document.getElementById('playPauseIcon');
+
+      if (isPlayingSound) {
+        btn.classList.add('sound-playing');
+        label.textContent = track.title.split(' ').pop();
+        iconEl.setAttribute('data-lucide', 'pause');
+      } else {
+        btn.classList.remove('sound-playing');
+        label.textContent = 'BGM 플레이어';
+        iconEl.setAttribute('data-lucide', 'play');
+      }
+      renderTrackChips();
+      lucide.createIcons();
+    }
+
+    function selectTrack(index) {
+      currentTrackIndex = index;
+      if (isPlayingSound) {
+        stopAllAudio();
+        startCurrentTrack();
+      }
+      updatePlayerUI();
+    }
+
+    function nextTrack() {
+      selectTrack((currentTrackIndex + 1) % BGM_TRACKS.length);
+    }
+
+    function prevTrack() {
+      selectTrack((currentTrackIndex - 1 + BGM_TRACKS.length) % BGM_TRACKS.length);
+    }
+
+    function togglePlayPause() {
+      if (!isPlayingSound) {
+        startCurrentTrack();
+        isPlayingSound = true;
+        showToast(`${BGM_TRACKS[currentTrackIndex].icon} ${BGM_TRACKS[currentTrackIndex].title} 재생`);
+      } else {
+        stopAllAudio();
+        isPlayingSound = false;
+      }
+      updatePlayerUI();
+    }
+
+    function updateBgmVolume(val) {
+      bgmVolume = Number(val) / 100;
+      document.getElementById('bgmVolumeText').textContent = `${val}%`;
+      if (masterGainNode && audioCtx) {
+        masterGainNode.gain.setTargetAtTime(bgmVolume, audioCtx.currentTime, 0.05);
+      }
+    }
+
+    function ensureAudioContext() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      if (!masterGainNode) {
+        masterGainNode = audioCtx.createGain();
+        masterGainNode.gain.value = bgmVolume;
+        masterGainNode.connect(audioCtx.destination);
+      }
+    }
+
+    function startCurrentTrack() {
+      ensureAudioContext();
+      stopAllAudio();
+
+      const trackId = BGM_TRACKS[currentTrackIndex].id;
+      if (trackId === 'piano') {
+        startLoFiPianoTrack();
+      } else if (trackId === 'rain') {
+        startRainSound();
+      } else if (trackId === 'fireplace') {
+        startFireplaceSound();
+      }
+    }
+
+    // 1) 새벽의 오르골 피아노 (부드러운 펜타토닉 아르페지오 합성)
+    function startLoFiPianoTrack() {
+      // Fmaj7 -> Em7 -> Dm7 -> Cmaj7 감성 코드 주파수 배열
+      const chords = [
+        [349.23, 440.00, 523.25, 659.25], // Fmaj7
+        [329.63, 392.00, 493.88, 587.33], // Em7
+        [293.66, 349.23, 440.00, 523.25], // Dm7
+        [261.63, 329.63, 392.00, 493.88]  // Cmaj7
+      ];
+      let step = 0;
+
+      const playNote = () => {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const chord = chords[Math.floor(step / 4) % chords.length];
+        const freq = chord[step % chord.length];
+
+        const osc = audioCtx.createOscillator();
+        const subOsc = audioCtx.createOscillator();
+        const noteGain = audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        // 은은한 배음 추가
+        subOsc.type = 'triangle';
+        subOsc.frequency.setValueAtTime(freq * 0.5, now);
+
+        noteGain.gain.setValueAtTime(0.0001, now);
+        noteGain.gain.exponentialRampToValueAtTime(0.14, now + 0.08);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.6);
+
+        osc.connect(noteGain);
+        subOsc.connect(noteGain);
+        noteGain.connect(masterGainNode);
+
+        osc.start(now);
+        subOsc.start(now);
+        osc.stop(now + 2.7);
+        subOsc.stop(now + 2.7);
+
+        step++;
+      };
+
+      playNote();
+      pianoLoopTimer = setInterval(playNote, 1150);
+    }
+
+    // 2) 창밖의 잔잔한 빗소리 (핑크 노이즈 + 로우패스 필터)
+    function startRainSound() {
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+        b6 = white * 0.115926;
+      }
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+      source.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 680;
+
+      source.connect(filter);
+      filter.connect(masterGainNode);
+      source.start(0);
+      activeAudioNodes.push(source);
+    }
+
+    // 3) 따뜻한 밤의 모닥불 (저역 럼블 + 간헐적 장작 타닥임)
+    function startFireplaceSound() {
+      const bufferSize = 3 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        // 브라운 노이즈(저음 불길) + 가끔씩 튀는 크래클(장작 소리)
+        const rumble = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = rumble;
+        const crackle = Math.random() < 0.0012 ? (Math.random() * 0.45 - 0.225) : 0;
+        output[i] = rumble * 0.45 + crackle;
+      }
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = noiseBuffer;
+      source.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 950;
+
+      source.connect(filter);
+      filter.connect(masterGainNode);
+      source.start(0);
+      activeAudioNodes.push(source);
+    }
+
+    function stopAllAudio() {
+      if (pianoLoopTimer) {
+        clearInterval(pianoLoopTimer);
+        pianoLoopTimer = null;
+      }
+      activeAudioNodes.forEach(node => {
+        try {
+          node.stop();
+          node.disconnect();
+        } catch (e) {}
+      });
+      activeAudioNodes = [];
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+      modalEntryId = null;
+    }
+
+    function editCurrentModalEntry() {
+      const entry = entries.find(e => e.id === modalEntryId);
+      closeDetailModal();
+      if (entry) openEditor(entry);
+    }
+
+    function askDeleteCurrentEntry() {
+      document.getElementById('deleteConfirmBar').classList.remove('hidden');
+    }
+
+    function cancelDelete() {
+      document.getElementById('deleteConfirmBar').classList.add('hidden');
+    }
+
+    function confirmDeleteEntry() {
+      if (!modalEntryId) return;
+      entries = entries.filter(e => e.id !== modalEntryId);
+      saveEntriesToStorage();
+      closeDetailModal();
+      renderMoodInsights();
+      renderCalendar();
+      renderArchiveFeed();
+      updateHomeView();
+      showToast('기록이 삭제되었습니다.');
+    }
+
+    /**
+     * HTML5 Canvas를 활용해 감성 일기 카드를 고해상도 PNG로 렌더링 및 다운로드
+     */
+    function downloadMoodCardImage() {
+      const entry = entries.find(e => e.id === modalEntryId);
+      if (!entry) return;
+
+      const mood = MOODS.find(m => m.id === entry.moodId) || MOODS[0];
+      const theme = THEMES.find(t => t.id === entry.themeId) || THEMES[0];
+      const canvas = document.getElementById('exportCanvas');
+      const ctx = canvas.getContext('2d');
+
+      const W = canvas.width;
+      const H = canvas.height;
+
+      // 1. 배경 그라데이션
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, theme.cardGradient[0]);
+      grad.addColorStop(1, theme.cardGradient[1]);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // 2. 내부 글래스 프레임
+      ctx.fillStyle = theme.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.45)';
+      roundRect(ctx, 90, 110, W - 180, H - 220, 48);
+      ctx.fill();
+
+      ctx.strokeStyle = theme.isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.75)';
+      ctx.lineWidth = 3;
+      roundRect(ctx, 90, 110, W - 180, H - 220, 48);
+      ctx.stroke();
+
+      // 3. 텍스트 색상 설정
+      const mainColor = theme.isDark ? '#f4f1f8' : '#262329';
+      const subColor = theme.isDark ? 'rgba(244, 241, 248, 0.65)' : 'rgba(38, 35, 41, 0.6)';
+
+      // 4. 이모지 & 날짜 & 무드 태그
+      ctx.font = '88px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(mood.emoji, W / 2, 275);
+
+      ctx.fillStyle = mainColor;
+      ctx.font = '600 32px "Gowun Batang", serif';
+      ctx.fillText(formatKoreanDate(entry.date), W / 2, 355);
+
+      ctx.fillStyle = subColor;
+      ctx.font = '500 26px "Inter", sans-serif';
+      ctx.fillText(`#${mood.label}  ·  ${theme.name} 무드`, W / 2, 405);
+
+      // 구분선
+      ctx.strokeStyle = theme.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - 80, 455);
+      ctx.lineTo(W / 2 + 80, 455);
+      ctx.stroke();
+
+      // 5. 본문 줄바꿈 렌더링
+      ctx.fillStyle = mainColor;
+      ctx.font = '400 36px "Gowun Batang", serif';
+      ctx.textAlign = 'left';
+      wrapText(ctx, entry.content, 170, 540, W - 340, 66);
+
+      // 6. 하단 워터마크
+      ctx.fillStyle = subColor;
+      ctx.font = '500 24px "Gowun Batang", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('감성일기장  —  Mood & Vibe Diary', W / 2, H - 155);
+
+      // 7. PNG 다운로드 트리거
+      const link = document.createElement('a');
+      link.download = `감성일기_${entry.date}_${mood.label}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      showToast('감성 일기 카드가 이미지로 저장되었어요 🖼️');
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const paragraphs = text.split('\n');
+      let currentY = y;
+      for (const p of paragraphs) {
+        let line = '';
+        for (let i = 0; i < p.length; i++) {
+          const testLine = line + p[i];
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && i > 0) {
+            ctx.fillText(line, x, currentY);
+            line = p[i];
+            currentY += lineHeight;
+          } else {
+            line = testLine;
+          }
+        }
+        ctx.fillText(line, x, currentY);
+        currentY += lineHeight;
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 9. Web Audio API 기반 잔잔한 빗소리 앰비언트 사운드 (외부 파일 불필요)
+     * ============================================================================
+     */
+    function toggleAmbientSound() {
+      const btn = document.getElementById('soundToggleBtn');
+      const label = document.getElementById('soundLabel');
+
+      if (!isPlayingSound) {
+        startRainSound();
+        isPlayingSound = true;
+        btn.classList.add('sound-playing');
+        label.textContent = '빗소리 ON';
+        showToast('잔잔한 빗소리가 재생됩니다 🌧️');
+      } else {
+        stopRainSound();
+        isPlayingSound = false;
+        btn.classList.remove('sound-playing');
+        label.textContent = '빗소리 OFF';
+      }
+    }
+
+    function startRainSound() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      // 핑크 노이즈 버퍼 생성 (부드러운 빗소리 질감)
+      const bufferSize = 2 * audioCtx.sampleRate;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+        output[i] *= 0.03; // 은은한 볼륨
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // 로우패스 필터로 날카로운 고음역 제거 -> 창밖에서 들리는 빗소리 연출
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 650;
+
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 0.45;
+
+      whiteNoise.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      whiteNoise.start(0);
+      rainNode = whiteNoise;
+    }
+
+    function stopRainSound() {
+      if (rainNode) {
+        try {
+          rainNode.stop();
+          rainNode.disconnect();
+        } catch (e) {}
+        rainNode = null;
+      }
+    }
+
+    /**
+     * ============================================================================
+     * 10. 유틸리티 (토스트 알림, XSS 방지)
+     * ============================================================================
+     */
+    let toastTimer = null;
+    function showToast(msg) {
+      const el = document.getElementById('toastMessage');
+      el.textContent = msg;
+      el.classList.remove('opacity-0', '-translate-y-2');
+      el.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        el.classList.remove('opacity-100', 'translate-y-0');
+        el.classList.add('opacity-0', '-translate-y-2');
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // 앱 실행
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
